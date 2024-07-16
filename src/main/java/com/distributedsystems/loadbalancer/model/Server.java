@@ -26,4 +26,8 @@ public class Server {
     public void setPortNumber(int portNumber) {
         this.portNumber = portNumber;
     }
+
+    public String getUrlWithPort() {
+        return this.url + ":" + this.portNumber;
+    }
 }

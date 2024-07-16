@@ -1,6 +1,7 @@
 package com.distributedsystems.loadbalancer.service.ServerHandler;
 
-import java.util.HashSet;
+import java.util.List;
+
 import com.distributedsystems.loadbalancer.model.Server;
 
 public interface IServerHandler {
@@ -9,6 +10,6 @@ public interface IServerHandler {
 
     public void removeServer(Server server);
 
-    public HashSet<Server> getServers();
+    public List<Server> getServers();
 
 }
