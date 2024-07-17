@@ -6,13 +6,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpStatusCodeException;
 
 public interface ILoadBalancerHandler {
 
-    public CompletableFuture<ResponseEntity<String>> forwardRequest(HttpServletRequest request)  throws RestClientException;
+    public CompletableFuture<ResponseEntity<String>> forwardRequest(HttpServletRequest request)  throws HttpStatusCodeException;
 
-    public void addServer(Server server);
+    public void addServer(Server server) throws Exception ;
 
     public void removeServer(Server server);
 

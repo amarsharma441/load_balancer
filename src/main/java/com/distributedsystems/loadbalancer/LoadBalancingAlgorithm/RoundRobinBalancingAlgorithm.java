@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.LoadBalancingAlgorithm;
+package com.distributedsystems.loadbalancer.loadBalancingAlgorithm;
 
 import java.util.List;
 
@@ -23,8 +23,11 @@ public class RoundRobinBalancingAlgorithm implements ILoadBalancingAlgorithm {
     }
 
     @Override
-    public Server getServer() {
-        List<Server> servers = serverHandler.getServers(); 
+    public Server getServer() throws Exception {
+        List<Server> servers = serverHandler.getServers();
+        if (servers.size() == 0) {
+            throw new Exception("No servers are registerd");
+        }
         increaseIndex(servers.size());
         return servers.get(currIndex);
     }

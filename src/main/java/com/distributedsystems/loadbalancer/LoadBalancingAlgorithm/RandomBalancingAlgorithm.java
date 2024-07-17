@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.LoadBalancingAlgorithm;
+package com.distributedsystems.loadbalancer.loadBalancingAlgorithm;
 
 import java.util.List;
 import java.util.Random;
@@ -19,8 +19,11 @@ public class RandomBalancingAlgorithm implements ILoadBalancingAlgorithm {
     private final Random random = new Random();
 
     @Override
-    public Server getServer() {
-        List<Server> servers = serverHandler.getServers(); 
+    public Server getServer() throws Exception {
+        List<Server> servers = serverHandler.getServers();
+        if (servers.size() == 0) {
+            throw new Exception("No servers are registerd");
+        } 
         int index = random.nextInt(servers.size());
         return servers.get(index);
     }
