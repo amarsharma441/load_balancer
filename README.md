@@ -118,7 +118,7 @@ This load balancer is designed to distribute incoming HTTP requests across multi
      404 NOT_FOUND - No servers are healthy at the moment or no servers are registered
      ```
      Also shown in image below:
-     ![](https://github.com/amarsharma441/load_balancer/tree/main/src/main/resources/static/no_server_registered.png)
+     ![](https://github.com/amarsharma441/load_balancer/blob/main/src/main/resources/static/no_server_registered.png)
      
 6. **Registering and Deregistering Servers**:
    - **Register a Server**:
@@ -143,7 +143,8 @@ This load balancer is designed to distribute incoming HTTP requests across multi
    - The load balancer periodically (set to 1 minute) checks the health of all registered servers. If any server is found to be unhealthy, the load balancer will stop sending requests to that server until it becomes healthy again.
 8. **Making Requests to Load Balancer**:
    - Once health checks are performed and servers are marked as healthy, you can hit the load balancer, and it will relay the request to the backend servers. As shown in image below:
-     ![](https://github.com/amarsharma441/load_balancer/tree/main/src/main/resources/static/no_server_registered.png)
+     ![](https://github.com/amarsharma441/load_balancer/blob/main/src/main/resources/static/handle_request_1.png)
+     ![](https://github.com/amarsharma441/load_balancer/blob/main/src/main/resources/static/handle_request_2.png)
 
 9. **Changing Load Balancing Algorithm**:
    - The load balancer supports three algorithms:
@@ -156,7 +157,7 @@ This load balancer is designed to distribute incoming HTTP requests across multi
      Body: random / roundRobin / leastConnections
      ```
      As shown in image below:
-     ![](https://github.com/amarsharma441/load_balancer/tree/main/src/main/resources/static/no_server_registered.png)
+     ![switch_algo.png](https://github.com/amarsharma441/load_balancer/blob/main/src/main/resources/static/switch_algo.png)
    - If you provide any other algorithm, the API will throw a bad request error.
 
 **Note**: In the current implementation, the load balancer APIs for adding, removing servers, and switching algorithms do not yet support client authentication and authorization, presenting an opportunity for future enhancement.
