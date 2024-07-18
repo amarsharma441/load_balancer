@@ -122,7 +122,7 @@ public class LoadBalancerHandler implements ILoadBalancerHandler {
             CompletableFuture<ResponseEntity<Boolean>> response = serverHandler.checkServerHealth(server);
             Boolean isHealthy = response.join().getBody();
 
-            if (!isHealthy) {
+            if (isHealthy == null || !isHealthy) {
                 loadBalancerLogger.logInfo("Server " + server.getUrlWithPort() + " is unhealthy. Removing from the healthy servers list.");
                 try {
                     serverHandler.removeHealthyServer(server);

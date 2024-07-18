@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.testService.LoadBalancerHandlerTest;
+package com.distributedsystems.loadbalancer.testService.loadBalancerHandlerTest;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;

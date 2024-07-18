@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.testService.ServerHandlerTest;
+package com.distributedsystems.loadbalancer.testService.serverHandlerTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
