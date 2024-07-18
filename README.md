@@ -29,11 +29,11 @@ This load balancer is designed to distribute incoming HTTP requests across multi
 
 ### Data Flow
 
-* An incoming HTTP request is received by the `LoadBalancerController`.
-* The controller forwards the request to the `LoadBalancerHandler`.
-* The `LoadBalancerHandler` uses the selected load balancing algorithm to choose a backend server.
-* The request is routed to the chosen backend server.
-* Responses from the backend server are passed back to the client.
+1. An incoming HTTP request is received by the `LoadBalancerController`.
+2. The controller forwards the request to the `LoadBalancerHandler`.
+3. The `LoadBalancerHandler` uses the selected load balancing algorithm to choose a backend server.
+4. The request is routed to the chosen backend server.
+5. Responses from the backend server are passed back to the client.
 
 ## Class Descriptions
 
