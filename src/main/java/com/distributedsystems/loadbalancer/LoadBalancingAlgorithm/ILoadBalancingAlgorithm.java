@@ -1,4 +1,5 @@
-package com.distributedsystems.loadbalancer.loadBalancingAlgorithm;
+package com.distributedsystems.loadbalancer.LoadBalancingAlgorithm;
+
 
 import com.distributedsystems.loadbalancer.model.Server;
 

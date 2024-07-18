@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.service.loadBalancerHandler;
+package com.distributedsystems.loadbalancer.service.LoadBalancerHandler;
 
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -21,10 +21,10 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.distributedsystems.loadbalancer.LoadBalancingAlgorithm.ILoadBalancingAlgorithm;
 import com.distributedsystems.loadbalancer.helper.logger.ILoadBalancerLogger;
-import com.distributedsystems.loadbalancer.loadBalancingAlgorithm.ILoadBalancingAlgorithm;
 import com.distributedsystems.loadbalancer.model.Server;
-import com.distributedsystems.loadbalancer.service.serverHandler.IServerHandler;
+import com.distributedsystems.loadbalancer.service.ServerHandler.IServerHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
 

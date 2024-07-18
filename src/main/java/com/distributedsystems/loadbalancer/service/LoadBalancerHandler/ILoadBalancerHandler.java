@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.service.loadBalancerHandler;
+package com.distributedsystems.loadbalancer.service.LoadBalancerHandler;
 
 import com.distributedsystems.loadbalancer.model.Server;
 import jakarta.servlet.http.HttpServletRequest;

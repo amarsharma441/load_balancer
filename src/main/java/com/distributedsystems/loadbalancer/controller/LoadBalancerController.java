@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.distributedsystems.loadbalancer.helper.logger.ILoadBalancerLogger;
 import com.distributedsystems.loadbalancer.model.Server;
-import com.distributedsystems.loadbalancer.service.loadBalancerHandler.ILoadBalancerHandler;
+import com.distributedsystems.loadbalancer.service.LoadBalancerHandler.ILoadBalancerHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
 

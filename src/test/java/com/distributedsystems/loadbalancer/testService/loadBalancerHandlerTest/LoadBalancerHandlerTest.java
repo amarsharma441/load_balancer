@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.testService.loadBalancerHandlerTest;
+package com.distributedsystems.loadbalancer.testService.LoadBalancerHandlerTest;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -17,11 +17,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
+import com.distributedsystems.loadbalancer.LoadBalancingAlgorithm.ILoadBalancingAlgorithm;
 import com.distributedsystems.loadbalancer.helper.logger.ILoadBalancerLogger;
-import com.distributedsystems.loadbalancer.loadBalancingAlgorithm.ILoadBalancingAlgorithm;
 import com.distributedsystems.loadbalancer.model.Server;
-import com.distributedsystems.loadbalancer.service.loadBalancerHandler.LoadBalancerHandler;
-import com.distributedsystems.loadbalancer.service.serverHandler.IServerHandler;
+import com.distributedsystems.loadbalancer.service.LoadBalancerHandler.LoadBalancerHandler;
+import com.distributedsystems.loadbalancer.service.ServerHandler.IServerHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
 

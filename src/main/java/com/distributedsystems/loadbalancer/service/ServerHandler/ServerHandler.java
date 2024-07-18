@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.service.serverHandler;
+package com.distributedsystems.loadbalancer.service.ServerHandler;
 
 import java.util.ArrayList;
 import java.util.List;

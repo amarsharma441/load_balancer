@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.loadBalancingAlgorithm;
+package com.distributedsystems.loadbalancer.LoadBalancingAlgorithm;
 
 import java.util.List;
 import java.util.Map;
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.distributedsystems.loadbalancer.model.Server;
-import com.distributedsystems.loadbalancer.service.serverHandler.IServerHandler;
+import com.distributedsystems.loadbalancer.service.ServerHandler.IServerHandler;
 
 @Component("leastConnectionsBalancingAlgorithm")
 public class LeastConnectionsAlgorithm implements ILoadBalancingAlgorithm {

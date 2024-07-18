@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.testService.serverHandlerTest;
+package com.distributedsystems.loadbalancer.testService.ServerHandlerTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;import org.springframework.web.client.RestTemplate;
 
 import com.distributedsystems.loadbalancer.model.Server;
-import com.distributedsystems.loadbalancer.service.serverHandler.ServerHandler;
+import com.distributedsystems.loadbalancer.service.ServerHandler.ServerHandler;
 
 public class ServerHandlerTest {
 

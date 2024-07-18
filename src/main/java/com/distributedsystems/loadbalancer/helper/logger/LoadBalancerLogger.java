@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import com.distributedsystems.loadbalancer.service.loadBalancerHandler.LoadBalancerHandler;
+import com.distributedsystems.loadbalancer.service.LoadBalancerHandler.LoadBalancerHandler;
 
 @Component
 public class LoadBalancerLogger implements ILoadBalancerLogger {
