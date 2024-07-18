@@ -3,7 +3,6 @@ package com.distributedsystems.loadbalancer.model;
 public class Server {
 
     private String url;
-    
     private int portNumber;
     
     public Server(String url, int portNumber) {

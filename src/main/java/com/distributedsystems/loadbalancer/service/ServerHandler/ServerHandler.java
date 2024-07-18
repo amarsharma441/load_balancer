@@ -1,10 +1,11 @@
-package com.distributedsystems.loadbalancer.service.ServerHandler;
+package com.distributedsystems.loadbalancer.service.serverHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -19,7 +20,10 @@ public class ServerHandler implements IServerHandler {
 
     private List<Server> servers = new ArrayList<>();
     private List<Server> unHealthyServers = new ArrayList<>();
-    private final RestTemplate restTemplate = new RestTemplate();
+    private List<Server> healthyServers = new ArrayList<>();
+    
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     public void addServer(Server server) throws Exception {
@@ -75,6 +79,28 @@ public class ServerHandler implements IServerHandler {
     public void removeUnhealthyServer(Server server) {
         Predicate<Server> findServerByUrl = (s) -> s.getUrlWithPort().equals(server.getUrlWithPort());
         if (!unHealthyServers.removeIf(findServerByUrl))
+            throw new IllegalArgumentException("Server Not Found: " + server.getUrlWithPort());
+    }
+
+    @Override
+    public List<Server> getHealthyServers() {
+        return healthyServers;
+    }
+
+    @Override
+    public void addHealthyServer(Server server) throws Exception {
+        Predicate<Server> findServerByUrl = (s) -> s.getUrlWithPort().equals(server.getUrlWithPort());
+        Server existingunHealthyServer = healthyServers.stream().filter(findServerByUrl).findFirst().orElse(null);
+        if (existingunHealthyServer == null)
+            healthyServers.add(server);
+        else
+            throw new Exception("Server already marked as healthy");
+    }
+
+    @Override
+    public void removeHealthyServer(Server server) {
+        Predicate<Server> findServerByUrl = (s) -> s.getUrlWithPort().equals(server.getUrlWithPort());
+        if (!healthyServers.removeIf(findServerByUrl))
             throw new IllegalArgumentException("Server Not Found: " + server.getUrlWithPort());
     }
     

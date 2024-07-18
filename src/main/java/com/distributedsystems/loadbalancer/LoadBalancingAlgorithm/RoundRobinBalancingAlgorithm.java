@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.distributedsystems.loadbalancer.model.Server;
-import com.distributedsystems.loadbalancer.service.ServerHandler.IServerHandler;
+import com.distributedsystems.loadbalancer.service.serverHandler.IServerHandler;
 
 @Component("roundRobinBalancingAlgorithm")
 public class RoundRobinBalancingAlgorithm implements ILoadBalancingAlgorithm {
@@ -24,9 +24,9 @@ public class RoundRobinBalancingAlgorithm implements ILoadBalancingAlgorithm {
 
     @Override
     public Server getServer() throws Exception {
-        List<Server> servers = serverHandler.getServers();
+        List<Server> servers = serverHandler.getHealthyServers();
         if (servers.size() == 0) {
-            throw new Exception("No servers are registerd");
+            throw new Exception("No servers are healthy at a moment or no servers are registered");
         }
         increaseIndex(servers.size());
         return servers.get(currIndex);

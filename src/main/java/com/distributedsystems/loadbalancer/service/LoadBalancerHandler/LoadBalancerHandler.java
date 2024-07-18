@@ -1,6 +1,5 @@
-package com.distributedsystems.loadbalancer.service.LoadBalancerHandler;
+package com.distributedsystems.loadbalancer.service.loadBalancerHandler;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -25,13 +24,13 @@ import org.springframework.web.server.ResponseStatusException;
 import com.distributedsystems.loadbalancer.helper.logger.ILoadBalancerLogger;
 import com.distributedsystems.loadbalancer.loadBalancingAlgorithm.ILoadBalancingAlgorithm;
 import com.distributedsystems.loadbalancer.model.Server;
-import com.distributedsystems.loadbalancer.service.ServerHandler.IServerHandler;
+import com.distributedsystems.loadbalancer.service.serverHandler.IServerHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 
 @Service
-public class LoadBalancerHandler implements ILoadBalancerHandler{
+public class LoadBalancerHandler implements ILoadBalancerHandler {
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -46,7 +45,8 @@ public class LoadBalancerHandler implements ILoadBalancerHandler{
     @Autowired
     private ILoadBalancerLogger loadBalancerLogger;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private RestTemplate restTemplate;
 
     private static final Set<String> validAlgorithms;
 
@@ -54,6 +54,7 @@ public class LoadBalancerHandler implements ILoadBalancerHandler{
         validAlgorithms = new HashSet<>();
         validAlgorithms.add("random");
         validAlgorithms.add("roundRobin");
+        validAlgorithms.add("leastConnections");
     }
 
     @Override
@@ -86,7 +87,8 @@ public class LoadBalancerHandler implements ILoadBalancerHandler{
 
     @Override
     public void addServer(Server server) throws Exception {
-        serverHandler.addServer(server);       
+        serverHandler.addServer(server); 
+        performHealthCheck();      
     }
 
     @Override
@@ -103,15 +105,13 @@ public class LoadBalancerHandler implements ILoadBalancerHandler{
             throw new IllegalArgumentException("Invalid algorithm name: " + algorithmName);
     }
 
-    @Scheduled(fixedDelay = 5000) // check health of servers in every 5 sec
-    public void performHealthCheck() throws Exception{
+    // check health of servers in every 1 min
+    @Override
+    @Scheduled(fixedDelay = 60000) 
+    public void performHealthCheck() throws Exception {
         loadBalancerLogger.logInfo("LOG: Performing health check for servers");
         
-        List<Server> servers = serverHandler.getServers();
-        List<Server> unHealthyServers = serverHandler.getUnhealthyServers();
-        List<Server> allServers = new ArrayList<>();
-        allServers.addAll(servers);
-        allServers.addAll(unHealthyServers);
+        List<Server> allServers = serverHandler.getServers();
       
         if (allServers.size() == 0) {
             loadBalancerLogger.logInfo("LOG: No servers to perform health check");
@@ -123,33 +123,20 @@ public class LoadBalancerHandler implements ILoadBalancerHandler{
             Boolean isHealthy = response.join().getBody();
 
             if (!isHealthy) {
-                loadBalancerLogger.logInfo("Server " + server.getUrlWithPort() + " is unhealthy. Removing from the registered servers list.");
+                loadBalancerLogger.logInfo("Server " + server.getUrlWithPort() + " is unhealthy. Removing from the healthy servers list.");
                 try {
-                    serverHandler.removeServer(server);
-                } catch (Exception e) {
-                    //pass
-                    //loadBalancerLogger.logInfo("Failed to remove un healty server or it is already removed");
-                }
-                try {
+                    serverHandler.removeHealthyServer(server);
                     serverHandler.addUnhealthyServer(server);
                 } catch (Exception e) {
-                    //pass
-                    //loadBalancerLogger.logInfo("Failed to add un healty server or it is already added");
+                    loadBalancerLogger.logInfo("Failed to remove");
                 }
             } else {
-                //pass
-                //loadBalancerLogger.logInfo("Server " + server.getUrlWithPort() + " is healthy. Adding to the registered servers list if not present.");
+                loadBalancerLogger.logInfo("Server " + server.getUrlWithPort() + " is healthy. Adding to the healthy servers list if not present.");
                 try {
-                    serverHandler.addServer(server);
-                } catch (Exception e) {
-                    //pass
-                    //loadBalancerLogger.logInfo("Failed to add back healty server or it is already added");
-                }
-                try {
+                    serverHandler.addHealthyServer(server);
                     serverHandler.removeUnhealthyServer(server);
                 } catch (Exception e) {
-                    //pass
-                    //loadBalancerLogger.logInfo("Failed to remove un healty server or it is already removed");
+                    loadBalancerLogger.logInfo("Failed to add");
                 }
             }
         }

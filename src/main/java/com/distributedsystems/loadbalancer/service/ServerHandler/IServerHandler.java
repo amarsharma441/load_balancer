@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.service.ServerHandler;
+package com.distributedsystems.loadbalancer.service.serverHandler;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -22,5 +22,11 @@ public interface IServerHandler {
     public void addUnhealthyServer(Server server) throws Exception;
 
     public void removeUnhealthyServer(Server server);
+
+    public List<Server> getHealthyServers();
+
+    public void addHealthyServer(Server server) throws Exception;
+
+    public void removeHealthyServer(Server server);
 
 }

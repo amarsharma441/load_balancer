@@ -1,5 +1,7 @@
 package com.distributedsystems.loadbalancer.helper.logger;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface ILoadBalancerLogger {
-    public void logInfo(String message);
+    public CompletableFuture<Void> logInfo(String message);
 }

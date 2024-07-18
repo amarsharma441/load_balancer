@@ -1,4 +1,4 @@
-package com.distributedsystems.loadbalancer.service.LoadBalancerHandler;
+package com.distributedsystems.loadbalancer.service.loadBalancerHandler;
 
 import com.distributedsystems.loadbalancer.model.Server;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,5 +17,7 @@ public interface ILoadBalancerHandler {
     public void removeServer(Server server);
 
     public void switchAlgorithm(String algorithmName);
+
+    public void performHealthCheck() throws Exception;
 }
 
