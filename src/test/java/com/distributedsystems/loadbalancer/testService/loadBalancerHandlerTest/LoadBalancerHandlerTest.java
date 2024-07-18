@@ -74,7 +74,10 @@ class LoadBalancerHandlerTest {
         ResponseEntity<String> response = responseFuture.join();
 
         verify(loadBalancerLogger).logInfo("LOG: Forwarding GET request to backend server URL: " + server.getUrlWithPort() + "/test");
-        assert response.getBody().equals("Response Body");
+        String responseBody = response.getBody();
+        assert responseBody != null;
+        if (responseBody != null)
+            assert responseBody.equals("Response Body");
         assert response.getStatusCode() == HttpStatus.OK;
     }
 

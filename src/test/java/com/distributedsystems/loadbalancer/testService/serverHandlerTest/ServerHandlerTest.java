@@ -64,14 +64,20 @@ public class ServerHandlerTest {
         when(restTemplate.getForEntity(healthCheckUrl, Boolean.class)).thenReturn(mockResponse);
 
         CompletableFuture<ResponseEntity<Boolean>> future = serverHandler.checkServerHealth(server);
-        assertTrue(future.get().getBody());
+        Boolean responseBody = future.get().getBody();
+        assert responseBody != null;
+        if (responseBody != null)
+            assertTrue(responseBody);
         
         // Mocking failed health check response
         mockResponse = new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
         when(restTemplate.getForEntity(healthCheckUrl, Boolean.class)).thenReturn(mockResponse);
 
         future = serverHandler.checkServerHealth(server);
-        assertFalse(future.get().getBody());
+        Boolean responseBodyForUnhealthy = future.get().getBody();
+        assert responseBodyForUnhealthy != null;
+        if (responseBodyForUnhealthy != null)
+            assertFalse(responseBodyForUnhealthy);
     }
 
     @Test
