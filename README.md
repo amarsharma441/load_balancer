@@ -71,12 +71,9 @@ This load balancer is designed to distribute incoming HTTP requests across multi
    - `logInfo(String message)`: Implements logging functionality to record system activities.
 
 8. **Server**
-    - `Server(String url, int portNumber)`: Constructor to initialize a server with the specified URL and port number.
+    - `Server(String url)`: Constructor to initialize a server with the specified URL.
     - `getUrl()`: Returns the URL of the server.
     - `setUrl(String url)`: Sets the URL of the server.
-    - `getPortNumber()`: Returns the port number of the server.
-    - `setPortNumber(int portNumber)`: Sets the port number of the server.
-    - `getUrlWithPort()`: Returns the URL of the server concatenated with the port number.
 
 9. **AppConfig**
     - Configuration class for Spring Beans.
@@ -126,8 +123,7 @@ This load balancer is designed to distribute incoming HTTP requests across multi
      POST /addServer
      Body:
      {
-       "url": "http://localhost",
-       "portNumber": 8081
+       "url": "http://localhost:8081"
      }
      ```
    - **Deregister a Server**:
@@ -135,8 +131,7 @@ This load balancer is designed to distribute incoming HTTP requests across multi
      DELETE /removeServer
      Body:
      {
-       "url": "http://localhost",
-       "portNumber": 8081
+       "url": "http://localhost:8081"
      }
      ```
 7. **Health Checks**:

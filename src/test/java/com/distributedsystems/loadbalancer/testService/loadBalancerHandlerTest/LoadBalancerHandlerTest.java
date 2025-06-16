@@ -1,7 +1,7 @@
 package com.distributedsystems.loadbalancer.testService.loadBalancerHandlerTest;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -11,23 +11,24 @@ import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
-import com.distributedsystems.loadbalancer.LoadBalancingAlgorithm.ILoadBalancingAlgorithm;
-import com.distributedsystems.loadbalancer.helper.logger.ILoadBalancerLogger;
+import com.distributedsystems.loadbalancer.loadBalancingAlgorithm.ILoadBalancingAlgorithm;
 import com.distributedsystems.loadbalancer.model.Server;
 import com.distributedsystems.loadbalancer.service.LoadBalancerHandler.LoadBalancerHandler;
 import com.distributedsystems.loadbalancer.service.ServerHandler.IServerHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+@ExtendWith(MockitoExtension.class)
 class LoadBalancerHandlerTest {
 
-    @InjectMocks
     private LoadBalancerHandler loadBalancerHandler;
 
     @Mock
@@ -37,11 +38,7 @@ class LoadBalancerHandlerTest {
     private IServerHandler serverHandler;
 
     @Mock
-    @Qualifier("roundRobinBalancingAlgorithm")
     private ILoadBalancingAlgorithm loadBalancingAlgorithm;
-
-    @Mock
-    private ILoadBalancerLogger loadBalancerLogger;
 
     @Mock
     private RestTemplate restTemplate;
@@ -52,52 +49,48 @@ class LoadBalancerHandlerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        loadBalancerHandler = new LoadBalancerHandler(applicationContext, serverHandler, restTemplate);
+        ReflectionTestUtils.setField(loadBalancerHandler, "loadBalancingAlgorithm", loadBalancingAlgorithm);
     }
 
     @Test
     void testForwardRequest() throws Exception {
-        Server server = new Server("http://localhost", 8081);
+        Server server = new Server("http://localhost:8081");
         when(loadBalancingAlgorithm.getServer()).thenReturn(server);
         when(request.getRequestURI()).thenReturn("/test");
         when(request.getMethod()).thenReturn("GET");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Test-Header", "Test-Value");
-
         when(request.getHeaderNames()).thenReturn(Collections.enumeration(Collections.singletonList("Test-Header")));
-        when(request.getHeader(anyString())).thenReturn("Test-Value");
+        when(request.getHeader("Test-Header")).thenReturn("Test-Value");
 
-        ResponseEntity<String> responseEntity = new ResponseEntity<>("Response Body", HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class))).thenReturn(responseEntity);
+        ResponseEntity<String> mockResponse = new ResponseEntity<>("Response Body", HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(mockResponse);
 
-        CompletableFuture<ResponseEntity<String>> responseFuture = loadBalancerHandler.forwardRequest(request);
-        ResponseEntity<String> response = responseFuture.join();
+        CompletableFuture<ResponseEntity<String>> futureResponse = loadBalancerHandler.forwardRequest(request);
+        ResponseEntity<String> response = futureResponse.join();
 
-        verify(loadBalancerLogger).logInfo("LOG: Forwarding GET request to backend server URL: " + server.getUrlWithPort() + "/test");
-        String responseBody = response.getBody();
-        assert responseBody != null;
-        if (responseBody != null)
-            assert responseBody.equals("Response Body");
-        assert response.getStatusCode() == HttpStatus.OK;
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Response Body", response.getBody());
     }
 
     @Test
     void testAddServer() throws Exception {
-        Server server = new Server("http://localhost", 8081);
+        Server server = new Server("http://localhost:8081");
         doNothing().when(serverHandler).addServer(server);
+        when(serverHandler.getServers()).thenReturn(Collections.singletonList(server));
+        when(serverHandler.checkServerHealth(server))
+                .thenReturn(CompletableFuture.completedFuture(new ResponseEntity<>(true, HttpStatus.OK)));
 
         loadBalancerHandler.addServer(server);
 
         verify(serverHandler).addServer(server);
-        verify(loadBalancerLogger).logInfo("LOG: Performing health check for servers");
+        verify(serverHandler).checkServerHealth(server);
     }
 
     @Test
     void testRemoveServer() {
-        Server server = new Server("http://localhost", 8080);
-
+        Server server = new Server("http://localhost:8080");
         loadBalancerHandler.removeServer(server);
-
         verify(serverHandler).removeServer(server);
     }
 
@@ -105,31 +98,27 @@ class LoadBalancerHandlerTest {
     void testSwitchAlgorithm() {
         when(applicationContext.getBean("randomBalancingAlgorithm")).thenReturn(loadBalancingAlgorithm);
         loadBalancerHandler.switchAlgorithm("random");
-
         verify(applicationContext).getBean("randomBalancingAlgorithm");
     }
 
     @Test
     void testPerformHealthCheck() throws Exception {
-        Server healthyServer = new Server("http://healthy-server", 8080);
-        Server unhealthyServer = new Server("http://unhealthy-server", 8080);
+        Server healthyServer = new Server("http://healthy-server:8080");
+        Server unhealthyServer = new Server("http://unhealthy-server:8080");
 
-        List<Server> allServers = Arrays.asList(healthyServer, unhealthyServer);
-        when(serverHandler.getServers()).thenReturn(allServers);
+        List<Server> servers = Arrays.asList(healthyServer, unhealthyServer);
+        when(serverHandler.getServers()).thenReturn(servers);
 
-        CompletableFuture<ResponseEntity<Boolean>> healthyResponse = CompletableFuture.completedFuture(new ResponseEntity<>(true, HttpStatus.OK));
-        CompletableFuture<ResponseEntity<Boolean>> unhealthyResponse = CompletableFuture.completedFuture(new ResponseEntity<>(false, HttpStatus.OK));
-
-        when(serverHandler.checkServerHealth(healthyServer)).thenReturn(healthyResponse);
-        when(serverHandler.checkServerHealth(unhealthyServer)).thenReturn(unhealthyResponse);
+        when(serverHandler.checkServerHealth(healthyServer))
+                .thenReturn(CompletableFuture.completedFuture(new ResponseEntity<>(true, HttpStatus.OK)));
+        when(serverHandler.checkServerHealth(unhealthyServer))
+                .thenReturn(CompletableFuture.completedFuture(new ResponseEntity<>(false, HttpStatus.OK)));
 
         loadBalancerHandler.performHealthCheck();
 
-        verify(loadBalancerLogger).logInfo("LOG: Performing health check for servers");
         verify(serverHandler).addHealthyServer(healthyServer);
         verify(serverHandler).removeUnhealthyServer(healthyServer);
 
-        verify(loadBalancerLogger).logInfo("Server http://unhealthy-server:8080 is unhealthy. Removing from the healthy servers list.");
         verify(serverHandler).removeHealthyServer(unhealthyServer);
         verify(serverHandler).addUnhealthyServer(unhealthyServer);
     }

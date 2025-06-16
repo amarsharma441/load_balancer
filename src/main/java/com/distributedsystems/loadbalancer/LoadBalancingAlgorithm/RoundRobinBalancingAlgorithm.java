@@ -1,8 +1,8 @@
-package com.distributedsystems.loadbalancer.LoadBalancingAlgorithm;
+package com.distributedsystems.loadbalancer.loadBalancingAlgorithm;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import com.distributedsystems.loadbalancer.model.Server;
@@ -11,11 +11,13 @@ import com.distributedsystems.loadbalancer.service.ServerHandler.IServerHandler;
 @Component("roundRobinBalancingAlgorithm")
 public class RoundRobinBalancingAlgorithm implements ILoadBalancingAlgorithm {
 
-    
-    @Autowired 
-    private IServerHandler serverHandler;
+    private final IServerHandler serverHandler;
 
     private static int currIndex = -1;
+
+    public RoundRobinBalancingAlgorithm(IServerHandler serverHandler) {
+        this.serverHandler = serverHandler;
+    }
 
     private static synchronized void increaseIndex(int numberOfServers) {
         currIndex += 1;
@@ -25,7 +27,7 @@ public class RoundRobinBalancingAlgorithm implements ILoadBalancingAlgorithm {
     @Override
     public Server getServer() throws Exception {
         List<Server> servers = serverHandler.getHealthyServers();
-        if (servers.size() == 0) {
+        if (servers.isEmpty()) {
             throw new Exception("No servers are healthy at a moment or no servers are registered");
         }
         increaseIndex(servers.size());

@@ -10,14 +10,14 @@ import org.springframework.web.client.HttpStatusCodeException;
 
 public interface ILoadBalancerHandler {
 
-    public CompletableFuture<ResponseEntity<String>> forwardRequest(HttpServletRequest request)  throws HttpStatusCodeException;
+    CompletableFuture<ResponseEntity<String>> forwardRequest(HttpServletRequest request)  throws HttpStatusCodeException;
 
-    public void addServer(Server server) throws Exception ;
+    void addServer(Server server) throws Exception ;
 
-    public void removeServer(Server server);
+    void removeServer(Server server);
 
-    public void switchAlgorithm(String algorithmName);
+    void switchAlgorithm(String algorithmName);
 
-    public void performHealthCheck() throws Exception;
+    void performHealthCheck() throws Exception;
 }
 

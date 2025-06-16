@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -15,31 +15,40 @@ import org.springframework.web.client.RestTemplate;
 
 import com.distributedsystems.loadbalancer.model.Server;
 
+@Slf4j
 @Service
 public class ServerHandler implements IServerHandler {
 
-    private List<Server> servers = new ArrayList<>();
-    private List<Server> unHealthyServers = new ArrayList<>();
-    private List<Server> healthyServers = new ArrayList<>();
-    
-    @Autowired
-    private RestTemplate restTemplate;
+    private final List<Server> servers = new ArrayList<>();
+    private final List<Server> unHealthyServers = new ArrayList<>();
+    private final List<Server> healthyServers = new ArrayList<>();
+    private final RestTemplate restTemplate;
+
+    public ServerHandler(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     @Override
-    public void addServer(Server server) throws Exception {
-        Predicate<Server> findServerByUrl = (s) -> s.getUrlWithPort().equals(server.getUrlWithPort());
-        Server existingServer = servers.stream().filter(findServerByUrl).findFirst().orElse(null);
-        if (existingServer == null)
+    public void addServer(Server server) {
+        Predicate<Server> matchByUrl = s -> s.getUrl().equals(server.getUrl());
+        if (servers.stream().noneMatch(matchByUrl)) {
             servers.add(server);
-        else
-            throw new Exception("Server already registered");
+            log.info("Added new server: {}", server.getUrl());
+        } else {
+            log.warn("Attempt to add duplicate server: {}", server.getUrl());
+        }
     }
 
     @Override
     public void removeServer(Server server) {
-        Predicate<Server> findServerByUrl = (s) -> s.getUrlWithPort().equals(server.getUrlWithPort());
-        if (!servers.removeIf(findServerByUrl))
-            throw new IllegalArgumentException("Server Not Found: " + server.getUrlWithPort());
+        Predicate<Server> matchByUrl = s -> s.getUrl().equals(server.getUrl());
+        if (servers.removeIf(matchByUrl)) {
+            log.info("Removed server: {}", server.getUrl());
+        } else {
+            log.warn("Server not found for removal: {}", server.getUrl());
+        }
+        removeUnhealthyServer(server);
+        removeHealthyServer(server);
     }
 
     @Override
@@ -50,12 +59,14 @@ public class ServerHandler implements IServerHandler {
     @Async
     @Override
     public CompletableFuture<ResponseEntity<Boolean>> checkServerHealth(Server server) {
-        String healthCheckUrl = server.getUrlWithPort() + "/health";
+        String healthCheckUrl = server.getUrl() + "/health";
         try {
-            ResponseEntity<Boolean> responseEntity = restTemplate.getForEntity(healthCheckUrl, Boolean.class);
-            Boolean healthStatus = responseEntity.getStatusCode().is2xxSuccessful();
-            return CompletableFuture.completedFuture(new ResponseEntity<>(healthStatus, responseEntity.getStatusCode()));
+            ResponseEntity<Boolean> response = restTemplate.getForEntity(healthCheckUrl, Boolean.class);
+            boolean isHealthy = response.getStatusCode().is2xxSuccessful();
+            log.info("Health check for {} returned: {}", server.getUrl(), isHealthy);
+            return CompletableFuture.completedFuture(new ResponseEntity<>(isHealthy, response.getStatusCode()));
         } catch (RestClientException e) {
+            log.error("Health check failed for {}: {}", server.getUrl(), e.getMessage());
             return CompletableFuture.completedFuture(new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
@@ -66,20 +77,24 @@ public class ServerHandler implements IServerHandler {
     }
 
     @Override
-    public void addUnhealthyServer(Server server) throws Exception {
-        Predicate<Server> findServerByUrl = (s) -> s.getUrlWithPort().equals(server.getUrlWithPort());
-        Server existingunHealthyServer = unHealthyServers.stream().filter(findServerByUrl).findFirst().orElse(null);
-        if (existingunHealthyServer == null)
+    public void addUnhealthyServer(Server server) {
+        Predicate<Server> matchByUrl = s -> s.getUrl().equals(server.getUrl());
+        if (unHealthyServers.stream().noneMatch(matchByUrl)) {
             unHealthyServers.add(server);
-        else
-            throw new Exception("Server already marked as un healthy");
+            log.info("Marked server as unhealthy: {}", server.getUrl());
+        } else {
+            log.warn("Server already marked as unhealthy: {}", server.getUrl());
+        }
     }
 
     @Override
     public void removeUnhealthyServer(Server server) {
-        Predicate<Server> findServerByUrl = (s) -> s.getUrlWithPort().equals(server.getUrlWithPort());
-        if (!unHealthyServers.removeIf(findServerByUrl))
-            throw new IllegalArgumentException("Server Not Found: " + server.getUrlWithPort());
+        Predicate<Server> matchByUrl = s -> s.getUrl().equals(server.getUrl());
+        if (unHealthyServers.removeIf(matchByUrl)) {
+            log.info("Removed server from unhealthy list: {}", server.getUrl());
+        } else {
+            log.warn("Unhealthy server not found for removal: {}", server.getUrl());
+        }
     }
 
     @Override
@@ -88,20 +103,23 @@ public class ServerHandler implements IServerHandler {
     }
 
     @Override
-    public void addHealthyServer(Server server) throws Exception {
-        Predicate<Server> findServerByUrl = (s) -> s.getUrlWithPort().equals(server.getUrlWithPort());
-        Server existingunHealthyServer = healthyServers.stream().filter(findServerByUrl).findFirst().orElse(null);
-        if (existingunHealthyServer == null)
+    public void addHealthyServer(Server server) {
+        Predicate<Server> matchByUrl = s -> s.getUrl().equals(server.getUrl());
+        if (healthyServers.stream().noneMatch(matchByUrl)) {
             healthyServers.add(server);
-        else
-            throw new Exception("Server already marked as healthy");
+            log.info("Marked server as healthy: {}", server.getUrl());
+        } else {
+            log.warn("Server already marked as healthy: {}", server.getUrl());
+        }
     }
 
     @Override
     public void removeHealthyServer(Server server) {
-        Predicate<Server> findServerByUrl = (s) -> s.getUrlWithPort().equals(server.getUrlWithPort());
-        if (!healthyServers.removeIf(findServerByUrl))
-            throw new IllegalArgumentException("Server Not Found: " + server.getUrlWithPort());
+        Predicate<Server> matchByUrl = s -> s.getUrl().equals(server.getUrl());
+        if (healthyServers.removeIf(matchByUrl)) {
+            log.info("Removed server from healthy list: {}", server.getUrl());
+        } else {
+            log.warn("Healthy server not found for removal: {}", server.getUrl());
+        }
     }
-    
 }
